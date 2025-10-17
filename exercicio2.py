@@ -9,7 +9,7 @@ client = MongoClient("mongodb+srv://root:123@cluster0.sqkox39.mongodb.net/?retry
 db = client["test"]
 collection = db["Alunos"]
 
-def gerar_hash_sha512(nome_arquivo):
+def gerar_hash_sha256(nome_arquivo):
     h = hashlib.sha256()
     h.update(nome_arquivo.encode())
     return h.hexdigest()
@@ -44,4 +44,5 @@ else:
     print("Opção inválida.")
 
 client.close()
+
 
