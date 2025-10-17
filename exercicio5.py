@@ -1,57 +1,66 @@
-import hashlib
+from cryptography.fernet import Fernet
 from pymongo import MongoClient
-from datetime import datetime
-
+import hashlib
+import time
 
 client = MongoClient("mongodb+srv://root:123@cluster0.sqkox39.mongodb.net/""?retryWrites=true&w=majority&appName=Cluster0")
-db = client['usuarios_db']
-colecao = db['usuarios']
+db = client['lista']
+colecao = db['lista']
 
-def gerar_hash(senha: str) -> str:
-    hash_obj = hashlib.sha256(senha.encode())
-    return hash_obj.hexdigest()
+chave = Fernet.generate_key()
+fernet = Fernet(chave)
 
-def cadastrar_usuario(username: str, senha: str):
-    hash_senha = gerar_hash(senha)
-    colecao.insert_one({"username": username,"hash_senha": hash_senha,"data_criacao": datetime.now()})
-    print(f" Usuário '{username}' cadastrado com sucesso!\n")
+def gerar_hash(caminho_arquivo):
+    h = hashlib.sha256()
+    return h.hexdigest()
 
+def criar_backup(caminho_arquivo):
+    
+    with open(caminho_arquivo, "rb") as f:
+        conteudo = f.read()
+    conteudo_cripto = fernet.encrypt(conteudo)
 
-def verificar_senha(username: str, senha: str) -> bool:
-    user = colecao.find_one({"username": username})
-    hash_inserida = gerar_hash(senha)
-    if hash_inserida == user["hash_senha"]:
-        print(" Acesso permitido!\n")
-        return True
+    nome_backup = f"backup_{os.path.basename(caminho_arquivo)}"
+    with open(nome_backup, "wb") as f:
+        f.write(conteudo_cripto)
+
+    hash_arquivo = gerar_hash(caminho_arquivo)
+    timestamp = str(time.time())
+
+    colecao.insert_one({"arquivo_original": caminho_arquivo,"backup": nome_backup,"hash_sha256": hash_arquivo,"timestamp": timestamp})
+
+    print(f" Backup criado: {nome_backup}")
+    print(f"Hash SHA-256 armazenado: {hash_arquivo}")
+
+def verificar_backup(caminho_arquivo):
+    doc = colecao.find_one({"arquivo_original": caminho_arquivo})
+    hash_atual = gerar_hash(caminho_arquivo)
+    if hash_atual == doc['hash_sha256']:
+        print(" Arquivo íntegro! Hashs conferem.")
     else:
-        print(" Acesso negado! Senha incorreta.\n")
-        return False
-
+        print(" Arquivo alterado! Hashs não conferem.")
 
 while True:
-        print("=====================================")
-        print("        Sistema de Usuários        ")
-        print("=====================================")
-        print("1 - Cadastrar usuário")
-        print("2 - Login")
+        print("\n===================================")
+        print("        Backup Criptografado     ")
+        print("===================================")
+        print("1 - Criar backup")
+        print("2 - Verificar integridade do arquivo")
         print("3 - Sair")
-        print("=====================================")
-        
+        print("===================================")
         opcao = input("Escolha uma opção: ").strip()
 
         if opcao == "1":
-            u = input("Digite o nome do usuário: ").strip()
-            s = input("Digite a senha: ").strip()
-            cadastrar_usuario(u, s)
+            arquivo = input("Digite o caminho do arquivo a ser salvo em backup: ").strip()
+            criar_backup(arquivo)
 
         elif opcao == "2":
-            u = input("Digite o nome do usuário: ").strip()
-            s = input("Digite a senha: ").strip()
-            verificar_senha(u, s)
+            arquivo = input("Digite o caminho do arquivo original para verificação: ").strip()
+            verificar_backup(arquivo)
 
         elif opcao == "3":
-            print(" Saindo do sistema. Até logo!\n")
+            print(" Saindo do sistema de backup...")
             break
 
         else:
-            print(" Opção inválida! Tente novamente.\n")
+            print(" Opção inválida! Tente novamente.")
