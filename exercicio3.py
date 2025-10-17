@@ -1,7 +1,6 @@
 from pymongo import MongoClient
 import hashlib
 from cryptography.fernet import Fernet
-import secrets
 
 client = MongoClient("mongodb+srv://root:123@cluster0.sqkox39.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 db = client['lista']
@@ -68,4 +67,5 @@ if __name__ == "__main__":
             break
         else:
             print(" Opção inválida!")
+
 
