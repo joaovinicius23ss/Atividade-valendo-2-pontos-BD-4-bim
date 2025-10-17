@@ -10,7 +10,7 @@ def gerar_salt():
     return secrets.token_hex(16)
 
 def gerar_hash(senha, salt):
-    h = hashlib.sha512()
+    h = hashlib.sha256()
     h.update((salt + senha).encode())
     return h.hexdigest()
 
@@ -67,5 +67,6 @@ if __name__ == "__main__":
             break
         else:
             print(" Opção inválida!")
+
 
 
