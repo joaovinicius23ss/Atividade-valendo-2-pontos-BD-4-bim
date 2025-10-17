@@ -15,7 +15,7 @@ def gerar_hash_sha256(nome_arquivo):
     return h.hexdigest()
 
 def armazenar_hash(nome_arquivo):
-    hash_arquivo = gerar_hash_sha512(nome_arquivo)
+    hash_arquivo = gerar_hash_sha256(nome_arquivo)
     hash_criptografado = fernet.encrypt(hash_arquivo.encode())
     collection.insert_one({
         "nome_arquivo": nome_arquivo, "hash_criptografado": hash_criptografado})
@@ -44,5 +44,6 @@ else:
     print("Opção inválida.")
 
 client.close()
+
 
 
