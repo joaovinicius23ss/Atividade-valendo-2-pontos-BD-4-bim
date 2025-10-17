@@ -3,8 +3,8 @@ from pymongo import MongoClient
 import hashlib
 import base64
 
-client = MongoClient("mongodb://localhost:27017/")
-db = client["assinatura_db"]
+client = MongoClient("mongodb+srv://root:123@cluster0.sqkox39.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client["lista"]
 colecao_chaves = db["chaves"]
 colecao_mensagens = db["mensagens"]
 
