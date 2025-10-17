@@ -11,9 +11,6 @@ def gerar_hash(senha: str) -> str:
     return hash_obj.hexdigest()
 
 def armazenar_usuario(usuario: str, senha: str):
-    if colecao.find_one({'usuario': usuario}):
-        print("Usuário já existe!")
-        return
     hash_senha = gerar_hash(senha)
     colecao.insert_one({'usuario': usuario, 'hash_senha': hash_senha})
     print(f"Usuário '{usuario}' criado com sucesso!")
@@ -47,3 +44,4 @@ while True:
         break
     else:
         print("Opção inválida.")
+
