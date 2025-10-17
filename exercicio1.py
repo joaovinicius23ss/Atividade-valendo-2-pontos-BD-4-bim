@@ -20,9 +20,7 @@ db = client["test"]
 collection = db["Alunos"]
 
 documento = {
-    "nome_criptografado": nome_criptografado,
-    "senha_criptografada": senha_criptografada
-}
+    "nome_criptografado": nome_criptografado, "senha_criptografada": senha_criptografada }
 collection.insert_one(documento)
 print("Nome e senha criptografados inseridos no banco de dados.")
 
@@ -38,5 +36,6 @@ senha_descriptografada = fernet.decrypt(senha_recuperada_criptografada).decode()
 
 print(f"Nome descriptografado: {nome_descriptografado}")
 print(f"Senha descriptografada: {senha_descriptografada}")
+
 
 client.close()
