@@ -1,86 +1,49 @@
-from cryptography.fernet import Fernet
-from pymongo import MongoClient
 import hashlib
+from pymongo import MongoClient
 
-client = MongoClient("mongodb://localhost:27017")
-db = client["auth_demo"]
-users = db["users"]
+client = MongoClient("mongodb+srv://root:123@cluster0.sqkox39.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client['lista']
+colecao = db['lista']
 
-fernet = Fernet(Fernet.generate_key())
+def gerar_hash(senha: str) -> str:
 
-def _gera_salt():
-    return Fernet.generate_key().decode()
+    hash_obj = hashlib.sha256(senha.encode())
+    return hash_obj.hexdigest()
 
-def _derive(password, salt, iterations=150000):
-    return hashlib.pbkdf2_hmac("sha512", password.encode(), salt.encode(), iterations)
-
-def _comparar(a, b):
-    if len(a) != len(b):
-        return False
-    r = 0
-    for x, y in zip(a, b):
-        r |= ord(x) ^ ord(y)
-    return r == 0
-
-def create_user(username, password):
-    if users.find_one({"username": username}):
-        print("usuário já existe")
+def armazenar_usuario(usuario: str, senha: str):
+    if colecao.find_one({'usuario': usuario}):
+        print("Usuário já existe!")
         return
-    salt = _gera_salt()
-    iterations = 150000
-    dk = _derive(password, salt, iterations)
-    users.insert_one({
-        "username": username,
-        "salt": salt,
-        "iterations": iterations,
-        "derived_key_hex": dk.hex()
-    })
-    print("usuário criado")
+    hash_senha = gerar_hash(senha)
+    colecao.insert_one({'usuario': usuario, 'hash_senha': hash_senha})
+    print(f"Usuário '{usuario}' criado com sucesso!")
 
-def authenticate_user(username, password):
-    doc = users.find_one({"username": username})
-    if not doc:
-        print("usuário não encontrado")
-        return False
-    salt = doc["salt"]
-    iterations = int(doc["iterations"])
-    stored_hex = doc["derived_key_hex"]
-    dk = _derive(password, salt, iterations)
-    if _comparar(dk.hex(), stored_hex):
-        print("autenticação bem-sucedida")
+def verificar_senha(usuario: str, senha: str) -> bool:
+    usuario_encontrado = colecao.find_one({'usuario': usuario})
+    hash_fornecido = gerar_hash(senha)
+    if usuario_encontrado['hash_senha'] == hash_fornecido:
         return True
-    else:
-        print("senha incorreta")
-        return False
-
-def change_password(username, old_password, new_password):
-    if not authenticate_user(username, old_password):
-        print("não autorizado")
-        return
-    salt = _gera_salt()
-    iterations = 150000
-    dk = _derive(new_password, salt, iterations)
-    users.update_one({"username": username}, {"$set": {"salt": salt, "iterations": iterations, "derived_key_hex": dk.hex()}})
-    print("senha alterada")
+    return False
 
 
 while True:
-        print("1 criar | 2 autenticar | 3 trocar senha | 4 sair")
-        op = input("> ").strip()
-        if op == "1":
-            u = input("usuario: ").strip()
-            p = input("senha: ").strip()
-            create_user(u, p)
-        elif op == "2":
-            u = input("usuario: ").strip()
-            p = input("senha: ").strip()
-            authenticate_user(u, p)
-        elif op == "3":
-            u = input("usuario: ").strip()
-            old = input("senha atual: ").strip()
-            new = input("nova senha: ").strip()
-            change_password(u, old, new)
-        elif op == "4":
-            break
+    print("\n1 - Criar usuário")
+    print("2 - Verificar senha")
+    print("3 - Sair")
+    opcao = input("Escolha uma opção: ").strip()
+
+    if opcao == "1":
+        u = input("Usuário: ").strip()
+        s = input("Senha: ").strip()
+        armazenar_usuario(u, s)
+    elif opcao == "2":
+        u = input("Usuário: ").strip()
+        s = input("Senha: ").strip()
+        if verificar_senha(u, s):
+            print("Acesso permitido!")
         else:
-            print("opção inválida")
+            print("Acesso negado!")
+    elif opcao == "3":
+        break
+    else:
+        print("Opção inválida.")
