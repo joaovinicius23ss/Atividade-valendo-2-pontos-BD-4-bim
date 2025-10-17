@@ -34,8 +34,7 @@ def verificar_certificado(idx):
         print(f" Certificado de '{c['nome']}' foi alterado ou corrompido.")
 
 
-if __name__ == "__main__":
-    while True:
+while True:
         print("\n========================================")
         print("      Repositório de Certificados       ")
         print("========================================")
