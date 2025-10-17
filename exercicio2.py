@@ -11,9 +11,9 @@ except FileNotFoundError:
         f.write(chave)
 
 fernet = Fernet(chave)
-client = MongoClient("mongodb://localhost:27017")
-db = client["banco_integridade"]
-colecao = db["arquivos"]
+client = MongoClient("mongodb+srv://root:123@cluster0.sqkox39.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client["test"]
+collection = db["Alunos"]
 
 def gerar_hash_sha512(nome_arquivo):
     h = hashlib.sha512()
@@ -54,3 +54,4 @@ elif opcao == "2":
     verificar_integridade(arquivo)
 else:
     print("Opção inválida.")
+
