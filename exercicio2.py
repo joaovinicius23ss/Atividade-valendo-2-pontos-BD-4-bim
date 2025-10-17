@@ -10,7 +10,7 @@ db = client["test"]
 collection = db["Alunos"]
 
 def gerar_hash_sha512(nome_arquivo):
-    h = hashlib.sha512()
+    h = hashlib.sha256()
     h.update(nome_arquivo.encode())
     return h.hexdigest()
 
@@ -24,7 +24,7 @@ def armazenar_hash(nome_arquivo):
 def verificar_integridade(nome_arquivo):
     doc = collection.find_one({"nome_arquivo": nome_arquivo})
     hash_guardado = fernet.decrypt(doc["hash_criptografado"]).decode()
-    hash_atual = gerar_hash_sha512(nome_arquivo)
+    hash_atual = gerar_hash_sha256(nome_arquivo)
 
     if hash_guardado == hash_atual:
         print("Arquivo íntegro.")
@@ -44,3 +44,4 @@ else:
     print("Opção inválida.")
 
 client.close()
+
